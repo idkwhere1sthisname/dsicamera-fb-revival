@@ -52,7 +52,7 @@ def request_dump(request, raw_body=None):
     else:
         print("(empty)")
 
-def writekey(api_url,ssl_api_url,service,port,usessl="false",filename="key.bin",secret=DSI_SECRET,):
+def writekey(api_url,ssl_api_url,service,port,usessl="false",filename="key.bin",secret=DSI_SECRET):
     if usessl == "false":
         prot = "http"
     else:

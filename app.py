@@ -178,6 +178,7 @@ def restserver():
             pid = str(uuid.uuid4())
             t = os.path.join(UPLOAD_DIR,f"{pid}.jpg")
             f.save(t)
+            print(f"saved image to /uploads/{pid}.jpg");
             aid = data.get("aid","me")
             s = "https" if request.environ.get("wsgi.url_scheme") == "https" else "http"
             host = request.host

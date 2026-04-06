@@ -18,6 +18,6 @@ Since Facebook doesn't allow access to uploading photos from an application thro
 3. Search for `fb.t.app.nintendowifi.net`.
 4. Replace the URLs to your IP/Domain (you might need to null out extra bytes, if the URL is shorter, if so, rewrite the full path).
 5. Replace the ARM9 in the stock DSi Camera .NDS with your custom one and rebuild the ROM.
-6. Run the server, and create a configuration file.
+6. Run the server to create a configuration and a key file.
 
 You can run the server with HTTPS, but it was not tested, so you might need to replace the certificate chain in `/static/` with your own.

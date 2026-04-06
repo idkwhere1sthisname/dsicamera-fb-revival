@@ -254,6 +254,8 @@ if __name__ == "__main__":
                 confirm = input(f'You are setting the service status to "ended", this will disable the integration completely (error code 369000). Are you sure? (yes/no): ')
                 while confirm not in ["yes","no"]:
                     confirm = input("Please enter either yes or no: ")
+                if confirm == "no":
+                    status = "notended"
             writekey(secret=DSI_SECRET,api_url=restserverhost,port=port,ssl_api_url=restserverhost,service=status,filename="key.bin",usessl=str(ssl_v).lower())
         if not os.path.exists("uploads"):
             os.makedirs(UPLOAD_DIR,exist_ok=True)

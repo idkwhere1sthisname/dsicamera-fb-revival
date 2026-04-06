@@ -21,3 +21,5 @@ Since Facebook doesn't allow access to uploading photos from an application thro
 6. Run the server to create a configuration and a key file.
 
 You can run the server with HTTPS, but it was not tested, so you might need to replace the certificate chain in `/static/` with your own.
+
+The app might say that the save data is corrupt, but that's fine, (it doesn't actually delete your photos), it just makes you go through the tutorial again, though

@@ -250,6 +250,8 @@ if __name__ == "__main__":
             restserverhost = host
             if host == "0.0.0.0":
                 restserverhost = getlanip()
+            else:
+                restserverhost = host
             if status == "ended":
                 confirm = input(f'You are setting the service status to "ended", this will disable the integration completely (error code 369000). Are you sure? (yes/no): ')
                 while confirm not in ["yes","no"]:

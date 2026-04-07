@@ -22,6 +22,10 @@ Since Facebook doesn't allow access to uploading photos from an application thro
 
 You can run the server with HTTPS, but it was not tested, so you might need to replace the certificate chain in `/static/` with your own.
 
+## Please read before using
+
 **In the login dialog, please don't input any real information, as it doesn't actually communicate with Facebook or post your pictures on there.**
 
 The app might say that the save data is corrupt, but that's fine, (it doesn't actually delete your photos), it just makes you go through the tutorial again, though
+
+This also works on 3DS systems

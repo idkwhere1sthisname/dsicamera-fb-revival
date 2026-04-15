@@ -4,10 +4,13 @@ Facebook integration for Nintendo DSi Camera Revival (kinda)
 ## Why?
 
 This is such a niche feature, that no one bothered to revive, so I decided to do that.
-
-<div align="center">
-<img src="https://img.idkwh.ct8.pl/fb_twl/img1.jpg" width="309" height="309"/><img src="https://img.idkwh.ct8.pl/fb_twl/img2.jpg" width="309"/><br/><img src="https://img.idkwh.ct8.pl/fb_twl/img3.jpg" width="309"/><img src="https://img.idkwh.ct8.pl/fb_twl/log1.png" height="242"/>
-</div>
+<table align="center">
+  <tr><th colspan="2">Images</th></tr>
+  <tr><td><img src="https://img.idkwh.ct8.pl/fb_twl/img1.jpg" width="320" height="240"></td><td><img src="https://img.idkwh.ct8.pl/fb_twl/img2.jpg" width="320" height="240"></td>
+  </tr>
+  <tr><td><img src="https://img.idkwh.ct8.pl/fb_twl/img3.jpg" width="320" height="240"></td><td><img src="https://img.idkwh.ct8.pl/fb_twl/log1.png" width="320" height="240"></td>
+  </tr>
+</table>
 
 Since Facebook doesn't allow access to uploading photos from an application through its API, this server uploads the photos to the local directory, in `/uploads/`.
 

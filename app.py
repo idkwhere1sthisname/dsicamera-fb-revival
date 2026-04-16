@@ -3,54 +3,23 @@ from flask import Flask,Response,send_from_directory,abort,render_template,reque
 from werkzeug.serving import WSGIRequestHandler
 import os
 import xml.etree.ElementTree as ET
-from dotenv import load_dotenv
 import ssl
 import socket
 from urllib.parse import unquote
 import hashlib as hash
 import time
 import uuid
-import multidict
-import colorama
 import random
-load_dotenv()
-app = Flask("fb-integration",template_folder="errors",static_folder="static")
+app = Flask("fb-integration",static_folder="static")
 DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC = os.path.join(DIR,"static")
 CONFIG = os.path.join(DIR,"configuration.xml")
+KEY = os.path.join(STATIC,"key.bin")
+PRIVPEM = os.path.join(DIR,"private.pem")
+PRIVKEY = os.path.join(DIR,"private.key")
+UPLOADS = os.path.join(DIR,"uploads")
 DSI_SECRET = "06807f456ace0a9f505034b1009be9de" # always this
 API_KEY = "e8530988ef0ea099f190a9e28a2070c1" # this is also a static value sent by the DSi
-UPLOAD_DIR = "uploads"
-
-def dict_dump(passed_dict):
-    if isinstance(passed_dict, multidict.MultiDict):
-        passed_dict = passed_dict.items(multi=True)
-
-    for key, value in passed_dict.items():
-        print(f"{colorama.Fore.CYAN}{key}: {colorama.Fore.YELLOW}{value}{colorama.Style.RESET_ALL}")
-
-def request_dump(request, raw_body=None):
-    import colorama
-    colorama.init()
-
-    if request.args:
-        print(f"{colorama.Fore.MAGENTA}Arguments:{colorama.Style.RESET_ALL}")
-        dict_dump(request.args)
-
-    if request.form:
-        print(f"{colorama.Fore.MAGENTA}Form items:{colorama.Style.RESET_ALL}")
-        dict_dump(request.form)
-
-    print(f"{colorama.Fore.MAGENTA}Headers:{colorama.Style.RESET_ALL}")
-    dict_dump(request.headers)
-
-    print(f"{colorama.Fore.MAGENTA}Raw Body:{colorama.Style.RESET_ALL}")
-    if raw_body:
-        if isinstance(raw_body, bytes):
-            raw_body = raw_body.decode("utf-8",errors="replace")
-        print(unquote(raw_body))
-    else:
-        print("(empty)")
 
 def writekey(api_url,ssl_api_url,service,port,usessl="false",filename="key.bin",secret=DSI_SECRET):
     if usessl == "false":
@@ -77,13 +46,13 @@ def getlanip():
 
 @app.errorhandler(404)
 def notfound(error):
-    return render_template("404.html"),404
+    return "<h1>404 HTTP Not Found</h1>",404
 @app.errorhandler(403)
 def forbidden(error):
-    return render_template("403.html"),403
+    return "<h1>403 HTTP Forbidden</h1>",403
 @app.errorhandler(405)
 def methodunallowed(error):
-    return render_template("405.html"),405
+    return "<h1>405 HTTP Method Not Allowed</h1>",405
 @app.route("/")
 def index():
     return Response("fb",status=200,mimetype="text/html;charset=UTF-8")
@@ -165,10 +134,8 @@ def restserver():
             payload += f"<size>1</size>"
             payload += "</photos_createAlbum_response>"
         elif method == "facebook.photos.upload":
-            if not os.path.exists(UPLOAD_DIR):
-                st = 500
-                payload += '<error_msg>uploads dir not present</error_msg>'
-                return Response(payload,status=st,mimetype="application/xml; charset")
+            if not os.path.exists(UPLOADS):
+                os.makedirs(UPLOADS,exist_ok=True)
             f = next(iter(request.files.values()),None)
             if not f or f.filename == "":
                 print("upload failed")
@@ -176,7 +143,7 @@ def restserver():
                 payload += "<error_msg>upload failed</error_msg>"
                 return Response(payload,status=st,mimetype="application/xml; charset=UTF-8")
             pid = str(uuid.uuid4())
-            t = os.path.join(UPLOAD_DIR,f"{pid}.jpg")
+            t = os.path.join(UPLOADS,f"{pid}.jpg")
             f.save(t)
             print(f"saved image to /uploads/{pid}.jpg");
             aid = data.get("aid","me")
@@ -198,8 +165,7 @@ if __name__ == "__main__":
     # set keep-alive
     WSGIRequestHandler.protocol_version = "HTTP/1.1"
     try:
-        config_file = "configuration.xml"
-        if not os.path.exists(config_file):
+        if not os.path.exists(CONFIG):
             host = input("Where should the server run (0.0.0.0 for all interfaces)?: ")
             port = None
             while port is None:
@@ -217,7 +183,7 @@ if __name__ == "__main__":
             if useSsl == "yes":
                 print("Please note that SSL/HTTPS on the integration was not tested.")
                 input("Please provide your SSL key and certificate (private.key and private.pem), then press enter.")
-                if os.path.exists("private.pem") and os.path.exists("private.key"):
+                if os.path.exists(PRIVPEM) and os.path.exists(PRIVKEY):
                     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
                     context.set_ciphers("ALL:@SECLEVEL=0")
                     context.load_cert_chain("private.pem", "private.key")
@@ -233,9 +199,9 @@ if __name__ == "__main__":
             ET.SubElement(config_xml,"port").text = port
             ET.SubElement(config_xml,"ssl").text = str(ssl_v)
             ET.SubElement(config_xml,"debug").text = str(debugmode)
-            ET.ElementTree(config_xml).write(config_file, encoding="utf-8", xml_declaration=True)
+            ET.ElementTree(config_xml).write(CONFIG, encoding="utf-8", xml_declaration=True)
         else:
-            tree = ET.parse(config_file)
+            tree = ET.parse(CONFIG)
             cfg = tree.getroot()
             host = cfg.find("host").text
             port = int(cfg.find("port").text)
@@ -245,14 +211,14 @@ if __name__ == "__main__":
             if ssl_v:
                 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
                 context.set_ciphers("ALL:@SECLEVEL=0")
-                context.load_cert_chain("private.pem", "private.key")
-        if not os.path.exists("static/key.bin"):
+                context.load_cert_chain(PRIVPEM,PRIVKEY)
+        if not os.path.exists(KEY):
             status = input("Now, what should the service status be? (anything: makes the service work, ended: shows a shutdown message): ")
+            while status == "" or None:
+                status = input("Please enter a valid string: ")
             restserverhost = host
             if host == "0.0.0.0":
                 restserverhost = getlanip()
-            else:
-                restserverhost = host
             if status == "ended":
                 confirm = input(f'You are setting the service status to "ended", this will disable the integration completely (error code 369000). Are you sure? (yes/no): ')
                 while confirm not in ["yes","no"]:
@@ -260,8 +226,8 @@ if __name__ == "__main__":
                 if confirm == "no":
                     status = "notended"
             writekey(secret=DSI_SECRET,api_url=restserverhost,port=port,ssl_api_url=restserverhost,service=status,filename="key.bin",usessl=str(ssl_v).lower())
-        if not os.path.exists("uploads"):
-            os.makedirs(UPLOAD_DIR,exist_ok=True)
+        if not os.path.exists(UPLOADS):
+            os.makedirs(UPLOADS,exist_ok=True)
             print("uploads folder created successfully")
         app.run(host,port,debugmode,ssl_context=context)
     except KeyboardInterrupt:
